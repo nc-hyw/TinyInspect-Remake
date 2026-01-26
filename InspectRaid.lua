@@ -117,7 +117,7 @@ end)
 
 --人員增加時觸發 @trigger RAID_INSPECT_TIMEOUT @trigger RAID_INSPECT_DONE
 LibEvent:attachEvent("GROUP_ROSTER_UPDATE", function(self)
-    if (TinyInspectDB and not TinyInspectDB.EnableRaidItemLevel) then return end
+    if (TinyInspectRemakeDB and not TinyInspectRemakeDB.EnableRaidItemLevel) then return end
     if (not IsInRaid()) then return TinyInspectRaidFrame:Hide() end
     local numCurrent = GetNumGroupMembers()
     if (numCurrent ~= numMembers) then GetMembers(numCurrent) end

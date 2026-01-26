@@ -48,8 +48,8 @@ end
 local function IsGreenStateEnabled()
     if (locale ~= "zh") then
         return false
-    elseif (TinyInspectDB) then
-        return TinyInspectDB.ShowPluginGreenState
+    elseif (TinyInspectRemakeDB) then
+        return TinyInspectRemakeDB.ShowPluginGreenState
     end
 end
 
