@@ -295,7 +295,7 @@ end)
 
 --@see InspectCore.lua 
 LibEvent:attachTrigger("UNIT_INSPECT_READY, UNIT_REINSPECT_READY", function(self, data)
-    if (TinyInspectDB and not TinyInspectDB.ShowInspectItemSheet) then return end
+    if (TinyInspectRemakeDB and not TinyInspectRemakeDB.ShowInspectItemSheet) then return end
     if (InspectFrame and InspectFrame.unit and UnitGUID(InspectFrame.unit) == data.guid) then
         local frame = ShowInspectItemListFrame(InspectFrame.unit, InspectFrame, data.ilevel, data.maxLevel)
         LibEvent:trigger("INSPECT_FRAME_COMPARE", frame)
@@ -312,7 +312,7 @@ LibEvent:attachTrigger("INSPECT_FRAME_SHOWN", function(self, frame, parent, ilev
             edgeSize = 16,
             insets   = {left = 4, right = 4, top = 4, bottom = 4}
           }
-    if (TinyInspectDB and TinyInspectDB.ShowInspectAngularBorder) then
+    if (TinyInspectRemakeDB and TinyInspectRemakeDB.ShowInspectAngularBorder) then
         backdrop.edgeSize = 1
         backdrop.edgeFile = "Interface\\Buttons\\WHITE8X8"
         backdrop.insets.top = 1
@@ -336,7 +336,7 @@ end)
 --高亮橙裝和武器
 LibEvent:attachTrigger("INSPECT_ITEMFRAME_UPDATED", function(self, itemframe)
     local r, g, b = 0, 0.9, 0.9
-    if (TinyInspectDB and TinyInspectDB.ShowInspectColoredLabel) then
+    if (TinyInspectRemakeDB and TinyInspectRemakeDB.ShowInspectColoredLabel) then
         if (itemframe.quality and itemframe.quality > 4) then
             r, g, b = GetItemQualityColor(itemframe.quality)
         elseif (itemframe.name and not itemframe.link) then
@@ -353,7 +353,7 @@ end)
 --自己裝備列表
 LibEvent:attachTrigger("INSPECT_FRAME_COMPARE", function(self, frame)
     if (not frame) then return end
-    if (TinyInspectDB and TinyInspectDB.ShowOwnFrameWhenInspecting) then
+    if (TinyInspectRemakeDB and TinyInspectRemakeDB.ShowOwnFrameWhenInspecting) then
         local _, ilevel, _, _, _, maxLevel = LibItemInfo:GetUnitItemLevel("player")
         local playerFrame = ShowInspectItemListFrame("player", frame, ilevel, maxLevel)
         if (frame.statsFrame) then
@@ -373,13 +373,13 @@ end)
 ----------------
 
 PaperDollFrame:HookScript("OnShow", function(self)
-    if (TinyInspectDB and not TinyInspectDB.ShowCharacterItemSheet) then return end
+    if (TinyInspectRemakeDB and not TinyInspectRemakeDB.ShowCharacterItemSheet) then return end
     local _, ilevel, _, _, _, maxLevel = LibItemInfo:GetUnitItemLevel("player")
     ShowInspectItemListFrame("player", self, ilevel, maxLevel)
 end)
 
 LibEvent:attachEvent("PLAYER_EQUIPMENT_CHANGED", function(self)
-    if (CharacterFrame:IsShown() and TinyInspectDB and TinyInspectDB.ShowCharacterItemSheet) then
+    if (CharacterFrame:IsShown() and TinyInspectRemakeDB and TinyInspectRemakeDB.ShowCharacterItemSheet) then
         local _, ilevel, _, _, _, maxLevel = LibItemInfo:GetUnitItemLevel("player")
         ShowInspectItemListFrame("player", PaperDollFrame, ilevel, maxLevel)
     end

@@ -71,7 +71,7 @@ local function GetItemLevelFrame(self, category)
         self.ItemLevelFrame.levelString:SetTextColor(1, 0.82, 0)
         LibEvent:trigger("ITEMLEVEL_FRAME_CREATED", self.ItemLevelFrame, self)
     end
-    if (TinyInspectDB and TinyInspectDB.EnableItemLevel) then
+    if (TinyInspectRemakeDB and TinyInspectRemakeDB.EnableItemLevel) then
         self.ItemLevelFrame:Show()
         LibEvent:trigger("ITEMLEVEL_FRAME_SHOWN", self.ItemLevelFrame, self, category or "")
     else
@@ -85,12 +85,12 @@ end
 
 --設置裝等文字
 local function SetItemLevelString(self, text, quality, link)
-    if (quality and TinyInspectDB and TinyInspectDB.ShowColoredItemLevelString) then
+    if (quality and TinyInspectRemakeDB and TinyInspectRemakeDB.ShowColoredItemLevelString) then
         local r, g, b, hex = GetItemQualityColor(quality)
         text = format("|c%s%s|r", hex, text)
     end
     --腐蚀的物品加个标记
-    if (TinyInspectDB and TinyInspectDB.ShowCorruptedMark and link and IsCorruptedItem(link)) then
+    if (TinyInspectRemakeDB and TinyInspectRemakeDB.ShowCorruptedMark and link and IsCorruptedItem(link)) then
         text = text .. "|cffFF3300★|r"
     end
     self:SetText(text)
@@ -99,7 +99,7 @@ end
 --設置部位文字
 local function SetItemSlotString(self, class, equipSlot, link)
     local slotText = ""
-    if (TinyInspectDB and TinyInspectDB.ShowItemSlotString) then
+    if (TinyInspectRemakeDB and TinyInspectRemakeDB.ShowItemSlotString) then
         if (equipSlot and string.find(equipSlot, "INVTYPE_")) then
             slotText = _G[equipSlot] or ""
         elseif (class == ARMOR) then
@@ -185,7 +185,7 @@ end
 hooksecurefunc("SetItemButtonQuality", function(self, quality, itemIDOrLink, suppressOverlays, isBound)
     if (self.ItemLevelCategory or self.isBag) then return end
     local frame = GetItemLevelFrame(self)
-    if (TinyInspectDB and not TinyInspectDB.EnableItemLevelOther) then
+    if (TinyInspectRemakeDB and not TinyInspectRemakeDB.EnableItemLevelOther) then
         return frame:Hide()
     end
     
@@ -260,9 +260,9 @@ LibEvent:attachEvent("ADDON_LOADED", function(self, addonName)
     if (addonName == "Blizzard_Communities" and GuildNewsButton_SetText) then
         GuildNewsItemCache = {}
         hooksecurefunc("GuildNewsButton_SetText", function(button, text_color, text, text1, text2, ...)
-            if (not TinyInspectDB or 
-                not TinyInspectDB.EnableItemLevel or 
-                not TinyInspectDB.EnableItemLevelGuildNews) then
+            if (not TinyInspectRemakeDB or 
+                not TinyInspectRemakeDB.EnableItemLevel or 
+                not TinyInspectRemakeDB.EnableItemLevelGuildNews) then
               return
             end
             if (text2 and type(text2) == "string") then
@@ -401,7 +401,7 @@ local function ChatItemLevel(Hyperlink)
 end
 
 local function filter(self, event, msg, ...)
-    if (TinyInspectDB and TinyInspectDB.EnableItemLevelChat) then
+    if (TinyInspectRemakeDB and TinyInspectRemakeDB.EnableItemLevelChat) then
         msg = msg:gsub("(|Hitem:%d+:.-|h.-|h)", ChatItemLevel)
     end
     return false, msg, ...
@@ -443,13 +443,13 @@ end)
 
 -- 位置設置
 LibEvent:attachTrigger("ITEMLEVEL_FRAME_SHOWN", function(self, frame, parent, category)
-    if (TinyInspectDB and not TinyInspectDB["EnableItemLevel"..category]) then
+    if (TinyInspectRemakeDB and not TinyInspectRemakeDB["EnableItemLevel"..category]) then
         return frame:Hide()
     end
-    if (TinyInspectDB and TinyInspectDB.PaperDollItemLevelOutsideString) then
+    if (TinyInspectRemakeDB and TinyInspectRemakeDB.PaperDollItemLevelOutsideString) then
         return
     end
-    local anchorPoint = TinyInspectDB and TinyInspectDB.ItemLevelAnchorPoint
+    local anchorPoint = TinyInspectRemakeDB and TinyInspectRemakeDB.ItemLevelAnchorPoint
     if (frame.anchorPoint ~= anchorPoint) then
         frame.anchorPoint = anchorPoint
         frame.levelString:ClearAllPoints()
@@ -459,7 +459,7 @@ end)
 
 -- OutsideString For PaperDoll ItemLevel
 LibEvent:attachTrigger("ITEMLEVEL_FRAME_CREATED", function(self, frame, parent)
-    if (TinyInspectDB and TinyInspectDB.PaperDollItemLevelOutsideString) then
+    if (TinyInspectRemakeDB and TinyInspectRemakeDB.PaperDollItemLevelOutsideString) then
         local name = parent:GetName()
         if (name and string.match(name, "^[IC].+Slot$")) then
             local id = parent:GetID()

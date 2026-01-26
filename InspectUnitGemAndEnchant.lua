@@ -145,7 +145,7 @@ local function ShowGemAndEnchant(frame, ItemLink, anchorFrame, itemframe)
     end
     local enchantItemID, enchantID = LibItemEnchant:GetEnchantItemID(ItemLink)
     local enchantSpellID = LibItemEnchant:GetEnchantSpellID(ItemLink)
-    local EnchantParts = TinyInspectDB.EnchantParts or {}
+    local EnchantParts = TinyInspectRemakeDB.EnchantParts or {}
     if (enchantItemID) then
         num = num + 1
         icon = GetIconFrame(frame)
@@ -201,7 +201,7 @@ end
 hooksecurefunc("ShowInspectItemListFrame", function(unit, parent, itemLevel, maxLevel)
     local frame = parent.inspectFrame
     if (not frame) then return end
-    if (TinyInspectDB and TinyInspectDB.ShowGemAndEnchant) then
+    if (TinyInspectRemakeDB and TinyInspectRemakeDB.ShowGemAndEnchant) then
         local i = 1
         local itemframe
         local width, iconWidth = frame:GetWidth(), 0

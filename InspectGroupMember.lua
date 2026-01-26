@@ -119,7 +119,7 @@ end)
 
 --人員增加時觸發 @trigger GROUP_MEMBER_INSPECT_TIMEOUT @trigger GROUP_MEMBER_INSPECT_DONE
 LibEvent:attachEvent("GROUP_ROSTER_UPDATE", function(self)
-    if (TinyInspectDB and not TinyInspectDB.EnableRaidItemLevel) then return end
+    if (TinyInspectRemakeDB and not TinyInspectRemakeDB.EnableRaidItemLevel) then return end
     if (not IsInGroup()) then return TinyInspectRaidFrame:Hide() end
     local unitprefix = IsInRaid() and "raid" or "party"
     local numCurrent = unitprefix == "party" and GetNumSubgroupMembers() or GetNumGroupMembers()
@@ -185,7 +185,7 @@ end
 --打印裝等
 local function PrintItemLevel(members)
     local num, pattern = 26, "  %s %.1f |c%s%s|r"
-    if (TinyInspectDB and TinyInspectDB.ShowPartySpecialization) then
+    if (TinyInspectRemakeDB and TinyInspectRemakeDB.ShowPartySpecialization) then
         num, pattern = 32, "  %s %.1f |c%s%s|r |cffcccccc%s|r"
     end
     DEFAULT_CHAT_FRAME:AddMessage(string.rep("-", num), 1, 0.64, 0)
@@ -222,7 +222,7 @@ local function SendItemLevel(members)
     if (GetTime() - lastBroadcastTimer < 5) then return end
     local channel = IsInGroup(LE_PARTY_CATEGORY_INSTANCE) and "INSTANCE_CHAT" or "PARTY"
     local num, pattern = 26, "%s %.1f %s"
-    if (TinyInspectDB and TinyInspectDB.ShowPartySpecialization) then
+    if (TinyInspectRemakeDB and TinyInspectRemakeDB.ShowPartySpecialization) then
         num, pattern = 30, "%s %.1f %s %s"
     end
     SendChatMessage(string.rep("-", num), channel)
@@ -236,10 +236,10 @@ end
 
 --讀取完后執行
 LibEvent:attachTrigger("GROUP_MEMBER_INSPECT_TIMEOUT, GROUP_MEMBER_INSPECT_DONE", function(self, members)
-    if (TinyInspectDB and TinyInspectDB.SendPartyItemLevelToSelf) then
+    if (TinyInspectRemakeDB and TinyInspectRemakeDB.SendPartyItemLevelToSelf) then
         PrintItemLevel(members)
     end
-    if (TinyInspectDB and TinyInspectDB.SendPartyItemLevelToParty) then
+    if (TinyInspectRemakeDB and TinyInspectRemakeDB.SendPartyItemLevelToParty) then
         SendItemLevel(members)
     end
 end)

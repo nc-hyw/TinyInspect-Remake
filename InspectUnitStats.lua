@@ -191,7 +191,7 @@ hooksecurefunc("ShowInspectItemListFrame", function(unit, parent, itemLevel, max
     local frame = parent.inspectFrame
     if (not frame) then return end
     if (unit == "player") then return end
-    if (TinyInspectDB and not TinyInspectDB.ShowItemStats) then
+    if (TinyInspectRemakeDB and not TinyInspectRemakeDB.ShowItemStats) then
         if (frame.statsFrame) then frame.statsFrame:Hide() end
         return
     end

@@ -49,13 +49,13 @@ end
 
 local function AppendToGameTooltip(guid, ilevel, spec, weaponLevel, isArtifact)
     spec = spec or ""
-    if (TinyInspectDB and not TinyInspectDB.EnableMouseSpecialization) then spec = "" end
+    if (TinyInspectRemakeDB and not TinyInspectRemakeDB.EnableMouseSpecialization) then spec = "" end
     local _, unit = GameTooltip:GetUnit()
     if (not unit) then return end
     local ilvlLine, _, lineRight = FindLine(GameTooltip, LevelLabel)
     local ilvlText = format("%s|cffffffff%s|r", LevelLabel, ilevel)
     local specText = format("|cffb8b8b8%s|r", spec)
-    if (weaponLevel and weaponLevel > 0 and TinyInspectDB.EnableMouseWeaponLevel) then
+    if (weaponLevel and weaponLevel > 0 and TinyInspectRemakeDB.EnableMouseWeaponLevel) then
         ilvlText = ilvlText .. format(" (%s)", weaponLevel)
     end
     if (ilvlLine) then
@@ -74,7 +74,7 @@ if (GameTooltip.ProcessInfo) then
         local flag = info.tooltipData.type
         if (flag ~= 2) then return end
 
-        if (TinyInspectDB and (TinyInspectDB.EnableMouseItemLevel or TinyInspectDB.EnableMouseSpecialization)) then
+        if (TinyInspectRemakeDB and (TinyInspectRemakeDB.EnableMouseItemLevel or TinyInspectRemakeDB.EnableMouseSpecialization)) then
             local _, unit = self:GetUnit()
             if (not unit) then return end
             if (not SafeUnitIsPlayer(unit)) then return end
@@ -100,7 +100,7 @@ end
 
 --@see InspectCore.lua
 LibEvent:attachTrigger("UNIT_INSPECT_READY", function(self, data)
-    if (TinyInspectDB and not TinyInspectDB.EnableMouseItemLevel) then return end
+    if (TinyInspectRemakeDB and not TinyInspectRemakeDB.EnableMouseItemLevel) then return end
     if (data.guid == UnitGUID("mouseover")) then
         AppendToGameTooltip(data.guid, floor(data.ilevel), data.spec, data.weaponLevel, data.isArtifact)
     end

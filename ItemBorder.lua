@@ -45,7 +45,7 @@ local function SetItemAngularBorderScheduled(button, quality, itemIDOrLink)
             end
             if (self.button.isBag) then
                 self.button.angularFrame:Hide()
-            elseif (TinyInspectDB and TinyInspectDB.ShowItemBorder) then
+            elseif (TinyInspectRemakeDB and TinyInspectRemakeDB.ShowItemBorder) then
                 LibEvent:trigger("SET_ITEM_ANGULARBORDER", self.button.angularFrame, quality, itemIDOrLink)
             else
                 self.button.angularFrame:Hide()
@@ -63,7 +63,7 @@ local function SetItemAngularBorder(self, quality, itemIDOrLink)
     end
     if (self.isBag) then
         self.angularFrame:Hide()
-    elseif (TinyInspectDB and TinyInspectDB.ShowItemBorder) then
+    elseif (TinyInspectRemakeDB and TinyInspectRemakeDB.ShowItemBorder) then
         LibEvent:trigger("SET_ITEM_ANGULARBORDER", self.angularFrame, quality, itemIDOrLink)
     else
         self.angularFrame:Hide()

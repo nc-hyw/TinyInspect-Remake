@@ -132,7 +132,7 @@ if (GetLocale():sub(1,2) == "zh") then
     tinsert(options, { key = "ShowPluginGreenState" })
 end
 
-TinyInspectDB = DefaultDB
+TinyInspectRemakeDB = DefaultDB
 
 local function CallCustomFunc(self)
     local checked = self:GetChecked()
@@ -165,11 +165,11 @@ local function OnClickCheckbox(self)
     if (strfind(self.key, "EnchantParts|")) then
         local _, key = strsplit("|", self.key)
         key = tonumber(key)
-        if (TinyInspectDB.EnchantParts[key]) then
-            TinyInspectDB.EnchantParts[key][1] = status
+        if (TinyInspectRemakeDB.EnchantParts[key]) then
+            TinyInspectRemakeDB.EnchantParts[key][1] = status
         end
     else
-        TinyInspectDB[self.key] = status
+        TinyInspectRemakeDB[self.key] = status
     end
     StatusSubCheckbox(self, status)
     CallCustomFunc(self)
@@ -252,18 +252,18 @@ local function CreateAnchorFrame(anchorkey, parent)
         button:SetSize(12, 12)
         button:SetPoint(anchorPoint)
         button:SetNormalTexture("Interface\\Buttons\\WHITE8X8")
-        if (TinyInspectDB[frame.anchorkey] == anchorPoint) then
+        if (TinyInspectRemakeDB[frame.anchorkey] == anchorPoint) then
             button:GetNormalTexture():SetVertexColor(1, 0.2, 0.1)
         end
         button:SetScript("OnClick", function(self)
             local parent = self:GetParent()
             local anchorPoint = self.anchorPoint
-            local anchorOrig = TinyInspectDB[parent.anchorkey]
+            local anchorOrig = TinyInspectRemakeDB[parent.anchorkey]
             if (parent[anchorOrig]) then
                 parent[anchorOrig]:GetNormalTexture():SetVertexColor(1, 1, 1)
             end
             self:GetNormalTexture():SetVertexColor(1, 0.2, 0.1)
-            TinyInspectDB[parent.anchorkey] = anchorPoint
+            TinyInspectRemakeDB[parent.anchorkey] = anchorPoint
         end)
         frame[anchorPoint] = button
     end
@@ -320,11 +320,11 @@ local function InitCheckbox(parent)
             if (strfind(checkbox.key, "EnchantParts|")) then
                 key = select(2, strsplit("|", checkbox.key))
                 key = tonumber(key)
-                if (TinyInspectDB.EnchantParts[key]) then
-                    checkbox:SetChecked(TinyInspectDB.EnchantParts[key][1])
+                if (TinyInspectRemakeDB.EnchantParts[key]) then
+                    checkbox:SetChecked(TinyInspectRemakeDB.EnchantParts[key][1])
                 end
             else
-                checkbox:SetChecked(TinyInspectDB[checkbox.key])
+                checkbox:SetChecked(TinyInspectRemakeDB[checkbox.key])
             end
             StatusSubCheckbox(checkbox, checkbox:GetChecked())
             CallCustomFunc(checkbox)
@@ -346,13 +346,13 @@ frame.name = displayName
 CreateCheckbox(options, frame, frame.title, 18, 9)
 
 LibEvent:attachEvent("VARIABLES_LOADED", function()
-    if (not TinyInspectDB or not TinyInspectDB.version) then
-        TinyInspectDB = DefaultDB
-    elseif (TinyInspectDB.version <= DefaultDB.version) then
-        TinyInspectDB.version = DefaultDB.version
+    if (not TinyInspectRemakeDB or not TinyInspectRemakeDB.version) then
+        TinyInspectRemakeDB = DefaultDB
+    elseif (TinyInspectRemakeDB.version <= DefaultDB.version) then
+        TinyInspectRemakeDB.version = DefaultDB.version
         for k, v in pairs(DefaultDB) do
-            if (TinyInspectDB[k] == nil) then
-                TinyInspectDB[k] = v
+            if (TinyInspectRemakeDB[k] == nil) then
+                TinyInspectRemakeDB[k] = v
             end
         end
     end
