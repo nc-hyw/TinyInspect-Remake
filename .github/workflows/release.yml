@@ -1,0 +1,37 @@
+name: Release Zip
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create zip
+        run: |
+          mkdir -p dist/TinyInspect-Remake
+          cp -R \
+            TinyInspect-Remake.toc \
+            *.lua \
+            locales \
+            libs \
+            texture \
+            Bindings.xml \
+            dist/TinyInspect-Remake/
+          cd dist
+          zip -r TinyInspect-Remake.zip TinyInspect-Remake \
+            -x "*.bk" -x "*.psd" -x "*.git*" -x "*.zip"
+
+      - name: Upload Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/TinyInspect-Remake.zip
+          body_path: CHANGELOG.md
