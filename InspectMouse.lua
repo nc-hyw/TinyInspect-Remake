@@ -19,11 +19,39 @@ end
 local LevelLabel = STAT_AVERAGE_ITEM_LEVEL .. ": "
 local SpecLabel = SPECIALIZATION .. ": "
 
+local function SafeUnitIsPlayer(unit)
+    if (not unit) then return false end
+    local ok, value = pcall(UnitIsPlayer, unit)
+    if (ok) then return value end
+    return false
+end
+
+local function SafeUnitIsUnit(a, b)
+    if (not a or not b) then return false end
+    local ok, value = pcall(UnitIsUnit, a, b)
+    if (ok) then return value end
+    return true
+end
+
+local function SafeCanInspect(unit)
+    if (not unit) then return false end
+    local ok, value = pcall(CanInspect, unit)
+    if (ok) then return value end
+    return true
+end
+
+local function SafeUnitIsVisible(unit)
+    if (not unit) then return false end
+    local ok, value = pcall(UnitIsVisible, unit)
+    if (ok) then return value end
+    return true
+end
+
 local function AppendToGameTooltip(guid, ilevel, spec, weaponLevel, isArtifact)
     spec = spec or ""
     if (TinyInspectDB and not TinyInspectDB.EnableMouseSpecialization) then spec = "" end
     local _, unit = GameTooltip:GetUnit()
-    if (not unit or UnitGUID(unit) ~= guid) then return end
+    if (not unit) then return end
     local ilvlLine, _, lineRight = FindLine(GameTooltip, LevelLabel)
     local ilvlText = format("%s|cffffffff%s|r", LevelLabel, ilevel)
     local specText = format("|cffb8b8b8%s|r", spec)
@@ -44,28 +72,28 @@ if (GameTooltip.ProcessInfo) then
     hooksecurefunc(GameTooltip, "ProcessInfo", function(self, info)
         if (not info or not info.tooltipData) then return end
         local flag = info.tooltipData.type
-        local guid = info.tooltipData.guid
         if (flag ~= 2) then return end
 
         if (TinyInspectDB and (TinyInspectDB.EnableMouseItemLevel or TinyInspectDB.EnableMouseSpecialization)) then
             local _, unit = self:GetUnit()
             if (not unit) then return end
+            if (not SafeUnitIsPlayer(unit)) then return end
             local data = GetInspectInfo(unit, 3)
-            if (data and data.ilevel > 0 and data.guid == guid) then
-                return AppendToGameTooltip(guid, floor(data.ilevel), data.spec, data.weaponLevel, data.isArtifact)
+            if (data and data.ilevel > 0 and SafeUnitIsUnit(data.unit, unit)) then
+                return AppendToGameTooltip(nil, floor(data.ilevel), data.spec, data.weaponLevel, data.isArtifact)
             end
-            if (not CanInspect(unit) or not UnitIsVisible(unit)) then return end
+            if (not SafeCanInspect(unit) or not SafeUnitIsVisible(unit)) then return end
             local inspecting = GetInspecting()
             if (inspecting) then
-                if (inspecting.guid ~= guid) then
-                    return AppendToGameTooltip(guid, "n/a")
+                if (inspecting.unit and not SafeUnitIsUnit(inspecting.unit, unit)) then
+                    return AppendToGameTooltip(nil, "n/a")
                 else
-                    return AppendToGameTooltip(guid, "......")
+                    return AppendToGameTooltip(nil, "......")
                 end
             end
             ClearInspectPlayer()
             NotifyInspect(unit)
-            AppendToGameTooltip(guid, "...")
+            AppendToGameTooltip(nil, "...")
         end
     end)
 end
