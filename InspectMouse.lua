@@ -10,7 +10,9 @@ local function FindLine(tooltip, keyword)
     for i = 2, tooltip:NumLines() do
         line = _G[tooltip:GetName() .. "TextLeft" .. i]
         text = line:GetText() or ""
-        if (string.find(text, keyword)) then
+        -- Avoid restricted/secret tooltip text errors in string operations.
+        local ok, found = pcall(string.find, text, keyword)
+        if (ok and found) then
             return line, i, _G[tooltip:GetName() .. "TextRight" .. i]
         end
     end
@@ -50,8 +52,8 @@ end
 local function AppendToGameTooltip(guid, ilevel, spec, weaponLevel, isArtifact)
     spec = spec or ""
     if (TinyInspectRemakeDB and not TinyInspectRemakeDB.EnableMouseSpecialization) then spec = "" end
-    local _, unit = GameTooltip:GetUnit()
-    if (not unit) then return end
+    local ok, _, unit = pcall(GameTooltip.GetUnit, GameTooltip)
+    if (not ok or not unit) then return end
     local ilvlLine, _, lineRight = FindLine(GameTooltip, LevelLabel)
     local ilvlText = format("%s|cffffffff%s|r", LevelLabel, ilevel)
     local specText = format("|cffb8b8b8%s|r", spec)
@@ -71,12 +73,10 @@ end
 if (GameTooltip.ProcessInfo) then
     hooksecurefunc(GameTooltip, "ProcessInfo", function(self, info)
         if (not info or not info.tooltipData) then return end
-        local flag = info.tooltipData.type
-        if (flag ~= 2) then return end
+        local ok, _, unit = pcall(self.GetUnit, self)
+        if (not ok or not unit) then return end
 
         if (TinyInspectRemakeDB and (TinyInspectRemakeDB.EnableMouseItemLevel or TinyInspectRemakeDB.EnableMouseSpecialization)) then
-            local _, unit = self:GetUnit()
-            if (not unit) then return end
             if (not SafeUnitIsPlayer(unit)) then return end
             local data = GetInspectInfo(unit, 3)
             if (data and data.ilevel > 0 and SafeUnitIsUnit(data.unit, unit)) then
@@ -101,7 +101,11 @@ end
 --@see InspectCore.lua
 LibEvent:attachTrigger("UNIT_INSPECT_READY", function(self, data)
     if (TinyInspectRemakeDB and not TinyInspectRemakeDB.EnableMouseItemLevel) then return end
-    if (data.guid == UnitGUID("mouseover")) then
+    -- Guard against secret values in UnitGUID comparisons.
+    local ok, isMouseover = pcall(function()
+        return data.guid == UnitGUID("mouseover")
+    end)
+    if (ok and isMouseover) then
         AppendToGameTooltip(data.guid, floor(data.ilevel), data.spec, data.weaponLevel, data.isArtifact)
     end
 end)

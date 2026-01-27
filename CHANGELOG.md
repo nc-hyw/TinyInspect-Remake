@@ -1,7 +1,10 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-##[v1.0.2] 2026-01-26
+## [v1.0.3] 2026-01-27
+- Fixed several issue where inside instance will trigering secrete value error
+
+## [v1.0.2] 2026-01-26
 - Fixed an issue where settings will not be saved
 
 ## [v1.0.1] 2026-01-26
