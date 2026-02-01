@@ -1,6 +1,11 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+
+## [v1.0.4] 2026-02-01
+- Fixed an issue where merchant item level is not displayed
+- Fixed an issue where when mourseover an item and press ALT for a swap, item level is not displayed on available item
+
 ## [v1.0.3] 2026-01-27
 - Fixed several issue where inside instance will trigering secrete value error
 

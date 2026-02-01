@@ -151,7 +151,8 @@ local function SetItemLevel(self, link, category, BagID, SlotID)
             _, _, quality, _, _, class, subclass, _, equipSlot = GetItemInfo(link)
             --除了装备和圣物外,其它不显示装等
             if ((equipSlot and string.find(equipSlot, "INVTYPE_"))
-                or (subclass and string.find(subclass, RELICSLOT))) then
+                or (subclass and string.find(subclass, RELICSLOT))
+                or (category == "AltEquipment")) then
                 count, level = LibItemInfo:GetItemInfo(link, nil, true)
             else
                 count = 0
@@ -228,7 +229,11 @@ end)
 
 -- ALT
 if (EquipmentFlyout_DisplayButton) then
+    local EquipmentManager_GetLocationData = EquipmentManager_GetLocationData
     local UnpackLocation = EquipmentManager_UnpackLocation or (C_EquipmentSet and C_EquipmentSet.UnpackLocation)
+    local ItemLocation = ItemLocation
+    local Item = Item
+    local EQUIPMENTFLYOUT_FIRST_SPECIAL_LOCATION = EQUIPMENTFLYOUT_FIRST_SPECIAL_LOCATION
     local function TryUnpackLocation(location)
         if (not UnpackLocation and LoadAddOn) then
             pcall(LoadAddOn, "Blizzard_EquipmentManager")
@@ -238,7 +243,50 @@ if (EquipmentFlyout_DisplayButton) then
             return UnpackLocation(location)
         end
     end
+    local function SetItemLevelFromItemLocation(button, itemLocation)
+        if (not itemLocation) then return false end
+        if (C_Item and C_Item.GetItemLink) then
+            local link = C_Item.GetItemLink(itemLocation)
+            if (link) then
+                SetItemLevel(button, link, "AltEquipment")
+                return true
+            end
+        end
+        if (Item and Item.CreateFromItemLocation) then
+            local item = Item:CreateFromItemLocation(itemLocation)
+            item:ContinueOnItemLoad(function()
+                local link = item:GetItemLink()
+                SetItemLevel(button, link, "AltEquipment")
+            end)
+            return true
+        end
+        return false
+    end
+    local function GetItemLocationFromButton(button)
+        if (button.itemLocation) then
+            return button.itemLocation
+        end
+        if (type(button.location) == "number"
+            and (not EQUIPMENTFLYOUT_FIRST_SPECIAL_LOCATION or button.location < EQUIPMENTFLYOUT_FIRST_SPECIAL_LOCATION)
+            and EquipmentManager_GetLocationData
+            and ItemLocation
+            and ItemLocation.CreateFromBagAndSlot
+            and ItemLocation.CreateFromEquipmentSlot) then
+            local data = EquipmentManager_GetLocationData(button.location)
+            if (data) then
+                if (data.isBags) then
+                    return ItemLocation:CreateFromBagAndSlot(data.bag, data.slot)
+                else
+                    return ItemLocation:CreateFromEquipmentSlot(data.slot)
+                end
+            end
+        end
+    end
     hooksecurefunc("EquipmentFlyout_DisplayButton", function(button, paperDollItemSlot)
+        local itemLocation = GetItemLocationFromButton(button)
+        if (itemLocation and SetItemLevelFromItemLocation(button, itemLocation)) then
+            return
+        end
         local location = button.location
         if (not location) then return end
         local player, bank, bags, voidStorage, slot, bag, tab, voidSlot = TryUnpackLocation(location)
@@ -279,6 +327,44 @@ LibEvent:attachEvent("ADDON_LOADED", function(self, addonName)
         end)
     end
 end)
+
+-- Merchant
+local function UpdateMerchantItemLevel()
+    if (not TinyInspectRemakeDB
+        or not TinyInspectRemakeDB.EnableItemLevel
+        or not TinyInspectRemakeDB.EnableItemLevelMerchant) then
+        return
+    end
+    if (not MerchantFrame) then return end
+    local page = MerchantFrame.page or 1
+    local perPage = MERCHANT_ITEMS_PER_PAGE or 12
+    local numItems = GetMerchantNumItems and GetMerchantNumItems() or 0
+    local buttonPool = MerchantFrame.itemButtons
+        or (MerchantFrame.MerchantItemList and MerchantFrame.MerchantItemList.itemButtons)
+    for i = 1, perPage do
+        local index = (page - 1) * perPage + i
+        local link = GetMerchantItemLink(index)
+        local button = (buttonPool and buttonPool[i])
+            or _G["MerchantItem"..i.."ItemButton"]
+            or _G["MerchantItem"..i]
+        if (button) then
+            if (numItems > 0 and index <= numItems) then
+                SetItemLevel(button, link, "Merchant")
+            else
+                SetItemLevel(button, nil, "Merchant")
+            end
+        end
+    end
+end
+
+if (MerchantFrame_UpdateMerchantInfo) then
+    hooksecurefunc("MerchantFrame_UpdateMerchantInfo", UpdateMerchantItemLevel)
+end
+if (MerchantFrame_Update) then
+    hooksecurefunc("MerchantFrame_Update", UpdateMerchantItemLevel)
+end
+LibEvent:attachEvent("MERCHANT_SHOW", UpdateMerchantItemLevel)
+LibEvent:attachEvent("MERCHANT_UPDATE", UpdateMerchantItemLevel)
 
 -------------------
 --   PaperDoll  --
