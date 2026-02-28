@@ -40,19 +40,47 @@ end
 
 local GetItemStats = GetItemStats or C_Item.GetItemStats
 
+local function SafeNumber(value, fallback)
+    if (type(value) ~= "number") then
+        return fallback
+    end
+    local ok, normalized = pcall(function()
+        return value + 0
+    end)
+    if (ok and type(normalized) == "number") then
+        return normalized
+    end
+    return fallback
+end
+
+local function SafeGetSize(frame, fallbackW, fallbackH)
+    local w, h = fallbackW, fallbackH
+    if (frame and frame.GetSize) then
+        local ok, fw, fh = pcall(frame.GetSize, frame)
+        if (ok) then
+            w = SafeNumber(fw, w)
+            h = SafeNumber(fh, h)
+        end
+    end
+    return w, h
+end
+
 
 --框架 #category Bag|Bank|Merchant|Trade|GuildBank|Auction|AltEquipment|PaperDoll|Loot
 local function GetItemLevelFrame(self, category)
     if (not self.ItemLevelFrame) then
         local fontAdjust = GetLocale():sub(1,2) == "zh" and 0 or -3
-        local anchor, w, h = self.IconBorder or self, self:GetSize()
-        local ww, hh = anchor:GetSize()
-        if (ww == 0 or hh == 0) then
+        local anchor = self.IconBorder or self
+        local w, h = SafeGetSize(self, 32, 32)
+        local ww, hh = SafeGetSize(anchor, w, h)
+        if (ww <= 0 or hh <= 0) then
             anchor = self.Icon or self.icon or self
-            w, h = anchor:GetSize()
+            w, h = SafeGetSize(anchor, w, h)
         else
             w, h = min(w, ww), min(h, hh)
         end
+        if (w <= 0) then w = 32 end
+        if (h <= 0) then h = 32 end
         self.ItemLevelFrame = CreateFrame("Frame", nil, self)
         self.ItemLevelFrame:SetScale(max(0.75, h<32 and h/32 or 1))
         self.ItemLevelFrame:SetFrameLevel(110)
