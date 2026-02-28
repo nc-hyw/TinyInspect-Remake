@@ -6,6 +6,31 @@
 local LibEvent = LibStub:GetLibrary("LibEvent.7000")
 local LibSchedule = LibStub:GetLibrary("LibSchedule.7000")
 
+local function SafeNumber(value, fallback)
+    if (type(value) ~= "number") then
+        return fallback
+    end
+    local ok, normalized = pcall(function()
+        return value + 0
+    end)
+    if (ok and type(normalized) == "number") then
+        return normalized
+    end
+    return fallback
+end
+
+local function SafeGetSize(frame, fallbackW, fallbackH)
+    local w, h = fallbackW, fallbackH
+    if (frame and frame.GetSize) then
+        local ok, fw, fh = pcall(frame.GetSize, frame)
+        if (ok) then
+            w = SafeNumber(fw, w)
+            h = SafeNumber(fh, h)
+        end
+    end
+    return w, h
+end
+
 
 local function SetItemAngularBorderScheduled(button, quality, itemIDOrLink)
     if (button.angularFrame) then return end
@@ -17,14 +42,17 @@ local function SetItemAngularBorderScheduled(button, quality, itemIDOrLink)
         button    = button,
         onExecute = function(self)
             if (not self.button.angularFrame) then
-                local anchor, w, h = self.button.IconBorder or self.button, self.button:GetSize()
-                local ww, hh = anchor:GetSize()
-                if (ww == 0 or hh == 0) then
+                local anchor = self.button.IconBorder or self.button
+                local w, h = SafeGetSize(self.button, 32, 32)
+                local ww, hh = SafeGetSize(anchor, w, h)
+                if (ww <= 0 or hh <= 0) then
                     anchor = self.button.Icon or self.button.icon or self.button
-                    w, h = anchor:GetSize()
+                    w, h = SafeGetSize(anchor, w, h)
                 else
                     w, h = min(w, ww), min(h, hh)
                 end
+                if (w <= 0) then w = 32 end
+                if (h <= 0) then h = 32 end
                 if (w > h * 1.28) then
                     w = h
                 end
