@@ -1,6 +1,12 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [v1.0.5] 2026-03-01
+- Fixed several issues where during/after combat, and hove over world map
+elements will trigering secrete value errors
+- Fixed several issues where tooltip item level can not be turned off
+- Tooltip itemlevel now disabled by default
+
 
 ## [v1.0.4] 2026-02-01
 - Fixed an issue where merchant item level is not displayed
