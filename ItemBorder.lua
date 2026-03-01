@@ -31,6 +31,39 @@ local function SafeGetSize(frame, fallbackW, fallbackH)
     return w, h
 end
 
+local function CreateEdgeSet(parent, thickness, inset, layer)
+    local edges = {
+        top = parent:CreateTexture(nil, layer),
+        bottom = parent:CreateTexture(nil, layer),
+        left = parent:CreateTexture(nil, layer),
+        right = parent:CreateTexture(nil, layer),
+    }
+    for _, edge in pairs(edges) do
+        edge:SetTexture("Interface\\Buttons\\WHITE8X8")
+    end
+    edges.top:SetPoint("TOPLEFT", parent, "TOPLEFT", inset, -inset)
+    edges.top:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -inset, -inset)
+    edges.top:SetHeight(thickness)
+    edges.bottom:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", inset, inset)
+    edges.bottom:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -inset, inset)
+    edges.bottom:SetHeight(thickness)
+    edges.left:SetPoint("TOPLEFT", parent, "TOPLEFT", inset, -inset)
+    edges.left:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", inset, inset)
+    edges.left:SetWidth(thickness)
+    edges.right:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -inset, -inset)
+    edges.right:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -inset, inset)
+    edges.right:SetWidth(thickness)
+    return edges
+end
+
+local function SetEdgeSetColor(edges, r, g, b, a)
+    if (not edges) then return end
+    edges.top:SetVertexColor(r, g, b, a or 1)
+    edges.bottom:SetVertexColor(r, g, b, a or 1)
+    edges.left:SetVertexColor(r, g, b, a or 1)
+    edges.right:SetVertexColor(r, g, b, a or 1)
+end
+
 
 local function SetItemAngularBorderScheduled(button, quality, itemIDOrLink)
     if (button.angularFrame) then return end
@@ -61,15 +94,9 @@ local function SetItemAngularBorderScheduled(button, quality, itemIDOrLink)
                 self.button.angularFrame:SetSize(w, h)
                 self.button.angularFrame:SetPoint("CENTER", anchor, "CENTER", 0, 0)
                 self.button.angularFrame:Hide()
-                self.button.angularFrame.mask = CreateFrame("Frame", nil, self.button.angularFrame, BackdropTemplateMixin and "BackdropTemplate" or nil)
-                self.button.angularFrame.mask:SetSize(w-2, h-2)
-                self.button.angularFrame.mask:SetPoint("CENTER")
-                self.button.angularFrame.mask:SetBackdrop({edgeFile = "Interface\\Tooltips\\UI-Tooltip-Background", edgeSize = 2})
-                self.button.angularFrame.mask:SetBackdropBorderColor(0, 0, 0)
-                self.button.angularFrame.border = CreateFrame("Frame", nil, self.button.angularFrame, BackdropTemplateMixin and "BackdropTemplate" or nil)
-                self.button.angularFrame.border:SetSize(w, h)
-                self.button.angularFrame.border:SetPoint("CENTER")
-                self.button.angularFrame.border:SetBackdrop({edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1})
+                self.button.angularFrame.mask = CreateEdgeSet(self.button.angularFrame, 2, 1, "ARTWORK")
+                SetEdgeSetColor(self.button.angularFrame.mask, 0, 0, 0)
+                self.button.angularFrame.border = CreateEdgeSet(self.button.angularFrame, 1, 0, "OVERLAY")
             end
             if (self.button.isBag) then
                 self.button.angularFrame:Hide()
@@ -118,7 +145,7 @@ LibEvent:attachTrigger("SET_ITEM_ANGULARBORDER", function(self, frame, quality, 
             g = g - 0.3
             b = b - 0.3
         end
-        frame.border:SetBackdropBorderColor(r, g, b)
+        SetEdgeSetColor(frame.border, r, g, b)
         frame:Show()
     else
         frame:Hide()

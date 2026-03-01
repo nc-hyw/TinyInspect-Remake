@@ -76,7 +76,7 @@ if (GameTooltip.ProcessInfo) then
         local ok, _, unit = pcall(self.GetUnit, self)
         if (not ok or not unit) then return end
 
-        if (TinyInspectRemakeDB and (TinyInspectRemakeDB.EnableMouseItemLevel or TinyInspectRemakeDB.EnableMouseSpecialization)) then
+        if (TinyInspectRemakeDB and TinyInspectRemakeDB.EnableMouseItemLevel) then
             if (not SafeUnitIsPlayer(unit)) then return end
             local data = GetInspectInfo(unit, 3)
             if (data and data.ilevel > 0 and SafeUnitIsUnit(data.unit, unit)) then
