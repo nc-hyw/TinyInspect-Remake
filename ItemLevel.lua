@@ -151,6 +151,9 @@ local function SetItemLevelScheduled(button, ItemLevelFrame, link)
         frame     = ItemLevelFrame,
         button    = button,
         onExecute = function(self)
+            if (self.button.PendingItemLevelLink ~= self.identity) then
+                return true
+            end
             local count, level, _, _, quality, _, _, class, _, _, equipSlot = LibItemInfo:GetItemInfo(self.identity)
             if (count == 0) then
                 SetItemLevelString(self.frame.levelString, level > 0 and level or "", quality)
@@ -159,6 +162,8 @@ local function SetItemLevelScheduled(button, ItemLevelFrame, link)
                 self.button.OrigItemQuality = quality
                 self.button.OrigItemClass = class
                 self.button.OrigItemEquipSlot = equipSlot
+                self.button.OrigItemLink = self.identity
+                self.button.PendingItemLevelLink = nil
                 return true
             end
         end,
@@ -169,6 +174,20 @@ end
 local function SetItemLevel(self, link, category, BagID, SlotID)
     if (not self) then return end
     local frame = GetItemLevelFrame(self, category)
+    if (tonumber(link)) then
+        link = select(2, GetItemInfo(link))
+    end
+    if (not link or type(link) ~= "string" or not string.match(link, "item:(%d+):")) then
+        self.PendingItemLevelLink = nil
+        SetItemLevelString(frame.levelString, "")
+        SetItemSlotString(frame.slotString)
+        self.OrigItemLink = nil
+        self.OrigItemLevel = ""
+        self.OrigItemQuality = nil
+        self.OrigItemClass = nil
+        self.OrigItemEquipSlot = nil
+        return
+    end
     if (self.OrigItemLink == link) then
         SetItemLevelString(frame.levelString, self.OrigItemLevel, self.OrigItemQuality, link)
         SetItemSlotString(frame.slotString, self.OrigItemClass, self.OrigItemEquipSlot, self.OrigItemLink)
@@ -191,22 +210,61 @@ local function SetItemLevel(self, link, category, BagID, SlotID)
                 class = subclass
             end
             if (count > 0) then
+                self.PendingItemLevelLink = link
                 SetItemLevelString(frame.levelString, "...")
+                SetItemSlotString(frame.slotString)
                 return SetItemLevelScheduled(self, frame, link)
             else
+                self.PendingItemLevelLink = nil
                 if (tonumber(level) == 0) then level = "" end
                 SetItemLevelString(frame.levelString, level, quality, link)
                 SetItemSlotString(frame.slotString, class, equipSlot, link)
             end
-        else
-            SetItemLevelString(frame.levelString, "")
-            SetItemSlotString(frame.slotString)
         end
         self.OrigItemLink = link
         self.OrigItemLevel = level
         self.OrigItemQuality = quality
         self.OrigItemClass = class
         self.OrigItemEquipSlot = equipSlot
+    end
+end
+
+local function GetButtonBagAndSlot(button)
+    if (not button) then return end
+    local bag = button.bagID or button.BagID or button.bag
+    if (not bag and button.GetBagID) then
+        bag = button:GetBagID()
+    end
+    local slot = button.slot or button.slotID or button.Slot
+    if (not slot and button.GetSlotID) then
+        slot = button:GetSlotID()
+    end
+    if (not slot and button.GetID) then
+        slot = button:GetID()
+    end
+    bag = tonumber(bag)
+    slot = tonumber(slot)
+    if (bag and slot) then
+        return bag, slot
+    end
+end
+
+local function ResolveContainerLink(button, itemIDOrLink)
+    if (button and button.itemLocation and C_Item and C_Item.GetItemLink) then
+        local ok, link = pcall(C_Item.GetItemLink, button.itemLocation)
+        if (ok and link) then
+            return link
+        end
+    end
+    local bag, slot = GetButtonBagAndSlot(button)
+    if (bag and slot) then
+        local link = GetContainerItemLink(bag, slot)
+        if (link) then
+            return link, bag, slot
+        end
+    end
+    if (tonumber(itemIDOrLink)) then
+        return select(2, GetItemInfo(itemIDOrLink))
     end
 end
 
@@ -242,10 +300,11 @@ hooksecurefunc("SetItemButtonQuality", function(self, quality, itemIDOrLink, sup
         elseif (self.Tooltip) then
             link = select(2, self.Tooltip:GetItem())
             SetItemLevel(self, link)
-        --(Bank)
-        elseif (tonumber(itemIDOrLink) and self.hasItem) then
-            link = GetContainerItemLink(self:GetParent():GetID(), self:GetID())
-            SetItemLevel(self, link)
+        --(Bag/Bank container buttons)
+        elseif (tonumber(itemIDOrLink) and (self.itemLocation or self.bagID or self.BagID or self.GetBagID or self.hasItem)) then
+            local bag, slot
+            link, bag, slot = ResolveContainerLink(self, itemIDOrLink)
+            SetItemLevel(self, link, nil, bag, slot)
         else    --if (string.match(itemIDOrLink,"item:%d+:")) then
             SetItemLevel(self, itemIDOrLink)
         end
