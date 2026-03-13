@@ -65,6 +65,14 @@ local function SafeGetSize(frame, fallbackW, fallbackH)
     return w, h
 end
 
+local function SafeIsEquippableItem(link)
+    if (not IsEquippableItem or type(link) ~= "string") then
+        return false
+    end
+    local ok, equippable = pcall(IsEquippableItem, link)
+    return ok and equippable or false
+end
+
 
 --框架 #category Bag|Bank|Merchant|Trade|GuildBank|Auction|AltEquipment|PaperDoll|Loot
 local function GetItemLevelFrame(self, category)
@@ -128,9 +136,9 @@ end
 local function SetItemSlotString(self, class, equipSlot, link)
     local slotText = ""
     if (TinyInspectRemakeDB and TinyInspectRemakeDB.ShowItemSlotString) then
-        if (equipSlot and string.find(equipSlot, "INVTYPE_")) then
+        if (equipSlot and string.find(equipSlot, "INVTYPE_") and (not link or SafeIsEquippableItem(link))) then
             slotText = _G[equipSlot] or ""
-        elseif (class == ARMOR) then
+        elseif (class == ARMOR and (not link or SafeIsEquippableItem(link))) then
             slotText = class
         elseif (link and IsArtifactPowerItem(link)) then
             slotText = ARTIFACT_POWER
@@ -197,7 +205,7 @@ local function SetItemLevel(self, link, category, BagID, SlotID)
         if (link and string.match(link, "item:(%d+):")) then
             _, _, quality, _, _, class, subclass, _, equipSlot = GetItemInfo(link)
             --除了装备和圣物外,其它不显示装等
-            if ((equipSlot and string.find(equipSlot, "INVTYPE_"))
+            if (((equipSlot and string.find(equipSlot, "INVTYPE_")) and SafeIsEquippableItem(link))
                 or (subclass and string.find(subclass, RELICSLOT))
                 or (category == "AltEquipment")) then
                 count, level = LibItemInfo:GetItemInfo(link, nil, true)
@@ -263,9 +271,6 @@ local function ResolveContainerLink(button, itemIDOrLink)
             return link, bag, slot
         end
     end
-    if (tonumber(itemIDOrLink)) then
-        return select(2, GetItemInfo(itemIDOrLink))
-    end
 end
 
 --[[ All ]]
@@ -288,8 +293,10 @@ hooksecurefunc("SetItemButtonQuality", function(self, quality, itemIDOrLink, sup
             else
                 link = GetQuestItemLink(self.type, self:GetID())
             end
-            if (not link) then
-                link = select(2, GetItemInfo(itemIDOrLink))
+            -- Some quest bonus rewards  are not real item links.
+            -- Falling back to numeric itemIDOrLink can resolve to unrelated equippable items.
+            if (not link and type(itemIDOrLink) == "string" and string.match(itemIDOrLink, "item:(%d+):")) then
+                link = itemIDOrLink
             end
             SetItemLevel(self, link)
         --EncounterJournal
@@ -301,12 +308,16 @@ hooksecurefunc("SetItemButtonQuality", function(self, quality, itemIDOrLink, sup
             link = select(2, self.Tooltip:GetItem())
             SetItemLevel(self, link)
         --(Bag/Bank container buttons)
-        elseif (tonumber(itemIDOrLink) and (self.itemLocation or self.bagID or self.BagID or self.GetBagID or self.hasItem)) then
+        elseif (tonumber(itemIDOrLink) and (self.itemLocation or self.bagID or self.BagID or self.bag or self.slot or self.slotID or self.GetBagID or self.GetSlotID)) then
             local bag, slot
             link, bag, slot = ResolveContainerLink(self, itemIDOrLink)
             SetItemLevel(self, link, nil, bag, slot)
         else    --if (string.match(itemIDOrLink,"item:%d+:")) then
-            SetItemLevel(self, itemIDOrLink)
+            if (type(itemIDOrLink) == "string") then
+                SetItemLevel(self, itemIDOrLink)
+            else
+                SetItemLevel(self, nil)
+            end
         end
     else
         SetItemLevelString(frame.levelString, "")
