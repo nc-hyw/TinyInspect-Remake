@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.1.0] 2026-03-28
+- Update Enchant whitelist so that Midnight enchant can be displayed correctly
+- HUGE Performance improvements, now inspect should be instant
+- Removed 8.0 Corruption related code
+- Fixed Raid iLevel error
+
 ## [v1.0.7] 2026-03-14
 - Fixed an issue that some quest bonues are wrongly displayed as item
 

@@ -3,132 +3,106 @@
 -- 物品信息庫 Author: M
 ---------------------------------
 
-local MAJOR, MINOR = "LibItemInfo.7000", 6
+local MAJOR, MINOR = "LibItemInfo.7000", 8
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 
-local GetItemInfo = GetItemInfo or C_Item.GetItemInfo
+local GetItemInfo = GetItemInfo
+local GetItemStats = GetItemStats
+local GetDetailedItemLevelInfoAPI = C_Item.GetDetailedItemLevelInfo
+
+local function GetContainerItemLink(bag, slot)
+    local info = C_Container.GetContainerItemInfo(bag, slot)
+    return info and info.hyperlink
+end
 
 if not lib then return end
 
-local locale = GetLocale()
+local StatTokenToName = {
+    ITEM_MOD_STRENGTH_SHORT = ITEM_MOD_STRENGTH_SHORT,
+    ITEM_MOD_AGILITY_SHORT = ITEM_MOD_AGILITY_SHORT,
+    ITEM_MOD_INTELLECT_SHORT = ITEM_MOD_INTELLECT_SHORT,
+    ITEM_MOD_STAMINA_SHORT = ITEM_MOD_STAMINA_SHORT,
+    ITEM_MOD_CRIT_RATING_SHORT = STAT_CRITICAL_STRIKE,
+    ITEM_MOD_HASTE_RATING_SHORT = STAT_HASTE,
+    ITEM_MOD_MASTERY_RATING_SHORT = STAT_MASTERY,
+    ITEM_MOD_VERSATILITY = STAT_VERSATILITY,
+    ITEM_MOD_VERSATILITY_RATING_SHORT = STAT_VERSATILITY,
+    ITEM_MOD_CR_AVOIDANCE_SHORT = STAT_AVOIDANCE,
+    ITEM_MOD_CR_SPEED_SHORT = STAT_SPEED,
+    ITEM_MOD_CR_LIFESTEAL_SHORT = STAT_LIFESTEAL,
+}
 
---物品等級匹配規則
-local ItemLevelPattern = gsub(ITEM_LEVEL, "%%d", "(%%d+)")
-local ItemLevelPlusPat = gsub(ITEM_LEVEL_PLUS, "%%d%+", "(%%d+%%+)")
-
---Toolip
-local tooltip = CreateFrame("GameTooltip", "LibItemLevelTooltip1", UIParent, "GameTooltipTemplate")
-local unittip = CreateFrame("GameTooltip", "LibItemLevelTooltip2", UIParent, "GameTooltipTemplate")
-
---物品是否已經本地化
-function lib:HasLocalCached(item)
-    if (not item or item == "" or item == "0") then return true end
-    if (tonumber(item)) then
-        return select(10, GetItemInfo(tonumber(item)))
-    else
-        local id, gem1, gem2, gem3 = string.match(item, "item:(%d+):[^:]*:(%d-):(%d-):(%d-):")
-        return self:HasLocalCached(id) and self:HasLocalCached(gem1) and self:HasLocalCached(gem2) and self:HasLocalCached(gem3)
+local function GetItemLevelViaAPI(link)
+    local level = GetDetailedItemLevelInfoAPI(link)
+    if (type(level) == "number") then
+        return level
     end
+    return nil
 end
 
---獲取TIP中的屬性信息 (zhTW|zhCN|enUS)
-function lib:GetStatsViaTooltip(tip, stats)
-    if (type(stats) == "table") then
-        local line, text, r, g, b, statValue, statName
-        for i = 2, tip:NumLines() do
-            line = _G[tip:GetName().."TextLeft" .. i]
-            text = line:GetText() or ""
-            r, g, b = line:GetTextColor()
-            for statValue, statName in string.gmatch(text, "%+([0-9,]+)([^%+%|]+)") do
-                statName = strtrim(statName)
-                statName = statName:gsub("與$", "") --zhTW
-                statName = statName:gsub("和$", "") --zhTW
-                statName = statName:gsub("，", "")  --zhCN
-                statName = statName:gsub("%s*&$", "") --enUS
-                statValue = statValue:gsub(",","")
-                statValue = tonumber(statValue) or 0
-                if (not stats[statName]) then
-                    stats[statName] = { value = statValue, r = r, g = g, b = b }
-                else
-                    stats[statName].value = stats[statName].value + statValue
-                    if (g > stats[statName].g) then
-                        stats[statName].r = r
-                        stats[statName].g = g
-                        stats[statName].b = b
-                    end
-                end
+function lib:GetStatsViaAPI(link, stats)
+    if (type(stats) ~= "table") then
+        return stats
+    end
+    local itemStats = GetItemStats(link)
+    if (type(itemStats) ~= "table") then
+        return stats
+    end
+    for token, statValue in pairs(itemStats) do
+        if (type(statValue) == "number" and statValue ~= 0) then
+            local statName = StatTokenToName[token] or _G[token] or token
+            if (not stats[statName]) then
+                stats[statName] = { value = statValue, r = 0, g = 1, b = 0.2 }
+            else
+                stats[statName].value = stats[statName].value + statValue
             end
         end
     end
     return stats
 end
 
--- koKR
-if (locale == "koKR") then
-    function lib:GetStatsViaTooltip(tip, stats)
-        if (type(stats) == "table") then
-            local line, text, r, g, b, statValue, statName
-            for i = 2, tip:NumLines() do
-                line = _G[tip:GetName().."TextLeft" .. i]
-                text = line:GetText() or ""
-                r, g, b = line:GetTextColor()
-                for statName, statValue in string.gmatch(text, "([^%+]+)%+([0-9,]+)") do
-                    statName = statName:gsub("|c%x%x%x%x%x%x%x%x", "")
-                    statName = statName:gsub(".-:", "")
-                    statName = strtrim(statName)
-                    statName = statName:gsub("%s*/%s*", "")
-                    statValue = statValue:gsub(",","")
-                    statValue = tonumber(statValue) or 0
-                    if (not stats[statName]) then
-                        stats[statName] = { value = statValue, r = r, g = g, b = b }
-                    else
-                        stats[statName].value = stats[statName].value + statValue
-                        if (g > stats[statName].g) then
-                            stats[statName].r = r
-                            stats[statName].g = g
-                            stats[statName].b = b
-                        end
-                    end
-                end
-            end
+--物品是否已經本地化
+-- checkGems=true keeps legacy behavior; false speeds up ilevel/stat reads.
+function lib:HasLocalCached(item, checkGems)
+    if (checkGems == nil) then
+        checkGems = true
+    end
+    if (not item or item == "" or item == "0") then return true end
+    if (tonumber(item)) then
+        return select(10, GetItemInfo(tonumber(item)))
+    else
+        local id, gem1, gem2, gem3 = string.match(item, "item:(%d+):[^:]*:(%d-):(%d-):(%d-):")
+        if (not id) then
+            return true
         end
-        return stats
+        if (not checkGems) then
+            return self:HasLocalCached(id, false)
+        end
+        return self:HasLocalCached(id, false) and self:HasLocalCached(gem1, false) and self:HasLocalCached(gem2, false) and self:HasLocalCached(gem3, false)
     end
 end
 
-
 --獲取物品實際等級信息
 function lib:GetItemInfo(link, stats, withoutExtra)
-    return self:GetItemInfoViaTooltip(link, stats, withoutExtra)
+    return self:GetItemInfoViaAPI(link, stats, withoutExtra)
 end
 
---獲取物品實際等級信息通過Tooltip
-function lib:GetItemInfoViaTooltip(link, stats, withoutExtra)
+--獲取物品實際等級信息通過API
+function lib:GetItemInfoViaAPI(link, stats, withoutExtra)
     if (not link or link == "") then
         return 0, 0
     end
     if (not string.match(link, "item:%d+:")) then
         return 1, -1
     end
-    if (not self:HasLocalCached(link)) then
+    if (not self:HasLocalCached(link, false)) then
         return 1, 0
     end
-    tooltip:SetOwner(UIParent, "ANCHOR_NONE")
-    tooltip:SetHyperlink(link)
-    local text, level
-    for i = 2, 5 do
-        if (_G[tooltip:GetName().."TextLeft" .. i]) then
-            text = _G[tooltip:GetName().."TextLeft" .. i]:GetText() or ""
-            level = string.match(text, ItemLevelPattern)
-            if (level) then break end
-            level = string.match(text, ItemLevelPlusPat)
-            if (level) then break end
-        end
+    local level = GetItemLevelViaAPI(link)
+    if (not level) then
+        return 1, 0
     end
-    self:GetStatsViaTooltip(tooltip, stats)
-    if (level and string.find(level, "+")) then else
-        level = tonumber(level) or 0
-    end
+    self:GetStatsViaAPI(link, stats)
     if (withoutExtra) then
         return 0, level
     else
@@ -136,55 +110,46 @@ function lib:GetItemInfoViaTooltip(link, stats, withoutExtra)
     end
 end
 
---獲取容器裏物品裝備等級
-function lib:GetContainerItemLevel(pid, id)
-    if (pid < 0) then
-        local link = GetContainerItemLink(pid, id)
-        return self:GetItemInfo(link)
-    end
-    local text, level
-    if (pid and id) then
-        tooltip:SetOwner(UIParent, "ANCHOR_NONE")
-        tooltip:SetBagItem(pid, id)
-        for i = 2, 5 do
-            if (_G[tooltip:GetName().."TextLeft" .. i]) then
-                text = _G[tooltip:GetName().."TextLeft" .. i]:GetText() or ""
-                level = string.match(text, ItemLevelPattern)
-                if (level) then break end
-            end
-        end
-    end
-    return 0, tonumber(level) or 0
+--兼容舊接口：不再使用Tooltip，直接走API
+function lib:GetItemInfoViaTooltip(link, stats, withoutExtra)
+    return self:GetItemInfoViaAPI(link, stats, withoutExtra)
 end
 
---獲取UNIT物品實際等級信息
+--獲取容器裏物品裝備等級
+function lib:GetContainerItemLevel(pid, id)
+    local link
+    if (pid and id) then
+        link = GetContainerItemLink(pid, id)
+    end
+    if (link) then
+        return self:GetItemInfo(link)
+    end
+    return 1, 0
+end
+
+--獲取UNIT物品實際等級信息（API）
 function lib:GetUnitItemInfo(unit, index, stats)
-    if (not UnitExists(unit)) then return 1, -1 end  --C_PaperDollInfo.GetInspectItemLevel
-    unittip:SetOwner(UIParent, "ANCHOR_NONE")
-    unittip:SetInventoryItem(unit, index)
-    local link = GetInventoryItemLink(unit, index) or select(2, unittip:GetItem())
+    if (not UnitExists(unit)) then return 1, -1 end
+    local link = GetInventoryItemLink(unit, index)
     if (not link or link == "") then
+        -- 檢視同步邊界可能暫時沒有link，標記為未知以便重試
+        if (GetInventoryItemID(unit, index)) then
+            return 1, 0
+        end
         return 0, 0
     end
-    if (not self:HasLocalCached(link)) then
+    if (not self:HasLocalCached(link, false)) then
         return 1, 0
     end
-    local text, level
-    for i = 2, 5 do
-        if (_G[unittip:GetName().."TextLeft" .. i]) then
-            text = _G[unittip:GetName().."TextLeft" .. i]:GetText() or ""
-            level = string.match(text, ItemLevelPattern)
-            if (level) then break end
-        end
+    local level = GetItemLevelViaAPI(link)
+    if (not level) then
+        return 1, 0
     end
-    self:GetStatsViaTooltip(unittip, stats)
+    self:GetStatsViaAPI(link, stats)
     if (string.match(link, "item:(%d+):")) then
-        return 0, tonumber(level) or 0, GetItemInfo(link)
+        return 0, level, GetItemInfo(link)
     else
-        local line = _G[unittip:GetName().."TextLeft1"]
-        local r, g, b = line:GetTextColor()
-        local name = ("|cff%.2x%.2x%.2x%s|r"):format((r or 1)*255, (g or 1)*255, (b or 1)*255, line:GetText() or "")
-        return 0, tonumber(level) or 0, name
+        return 0, level, link
     end
 end
 
@@ -216,9 +181,7 @@ function lib:GetUnitItemLevel(unit, stats)
     return counts, total/max(16-counts,1), total, max(mlevel,olevel), (mquality == 6 or oquality == 6), maxlevel
 end
 
---獲取任务物品實際link
+--獲取任务物品實際link（12.x API only，無Tooltip）
 function lib:GetQuestItemlink(questType, id)
-    tooltip:SetOwner(UIParent, "ANCHOR_NONE")
-    tooltip:SetQuestLogItem(questType, id)
-    return select(2, tooltip:GetItem()) or GetQuestLogItemLink(questType, id)
+    return GetQuestLogItemLink(questType, id) or GetQuestItemLink(questType, id)
 end
