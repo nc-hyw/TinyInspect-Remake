@@ -153,6 +153,20 @@ end)
 
 local memberslist = {}
 
+-- Compatibility for clients where Blizzard removed GetTexCoordsForRoleSmallCircle.
+local GetTexCoordsForRoleSmallCircleCompat = rawget(_G, "GetTexCoordsForRoleSmallCircle")
+local function GetRoleSmallCircleTexCoords(role)
+    if (type(GetTexCoordsForRoleSmallCircleCompat) == "function") then
+        return GetTexCoordsForRoleSmallCircleCompat(role)
+    elseif (role == "TANK") then
+        return 0, 19 / 64, 22 / 64, 41 / 64
+    elseif (role == "HEALER") then
+        return 20 / 64, 39 / 64, 1 / 64, 20 / 64
+    elseif (role == "DAMAGER") then
+        return 20 / 64, 39 / 64, 22 / 64, 41 / 64
+    end
+end
+
 local frame = CreateFrame("Frame", "TinyInspectRaidFrame", UIParent, "InsetFrameTemplate3")
 frame.BorderBottomLeft:SetTexture("Interface\\Common\\Common-Input-Border")
 frame.BorderBottomRight:SetTexture("Interface\\Common\\Common-Input-Border")
@@ -283,7 +297,7 @@ local function ShowMembersList()
         role = v.role or UnitGroupRolesAssigned(v.unit)
         r, g, b = GetClassColor(v.class)
         if (role == "TANK" or role == "HEALER" or role == "DAMAGER") then
-            button.role:SetTexCoord(GetTexCoordsForRoleSmallCircle(role))
+            button.role:SetTexCoord(GetRoleSmallCircleTexCoords(role))
             button.role:Show()
         else
             button.role:Hide()
