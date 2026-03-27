@@ -7,8 +7,6 @@ local LibEvent = LibStub:GetLibrary("LibEvent.7000")
 local LibItemInfo = LibStub:GetLibrary("LibItemInfo.7000")
 
 --bliz func
-local IsCorruptedItem = IsCorruptedItem or function(link) return false end
-
 --裝備清單
 local slots_retail = {
     { index = 1, name = HEADSLOT, },
@@ -234,11 +232,7 @@ function ShowInspectItemListFrame(unit, parent, ilevel, maxLevel)
             itemframe.levelString:SetText(format(formats,""))
             itemframe.itemString:SetText("")
         end
-        if (link and IsCorruptedItem(link)) then
-            itemframe.levelString:SetTextColor(0.5, 0.5, 1)
-        else
-            itemframe.levelString:SetTextColor(1, 1, 1)
-        end
+        itemframe.levelString:SetTextColor(1, 1, 1)
         itemwidth = itemframe.itemString:GetWidth()
         if (itemwidth > 208) then
             itemwidth = 208

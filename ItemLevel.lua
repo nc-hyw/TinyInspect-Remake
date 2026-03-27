@@ -125,10 +125,6 @@ local function SetItemLevelString(self, text, quality, link)
         local r, g, b, hex = GetItemQualityColor(quality)
         text = format("|c%s%s|r", hex, text)
     end
-    --腐蚀的物品加个标记
-    if (TinyInspectRemakeDB and TinyInspectRemakeDB.ShowCorruptedMark and link and IsCorruptedItem(link)) then
-        text = text .. "|cffFF3300★|r"
-    end
     self:SetText(text)
 end
 

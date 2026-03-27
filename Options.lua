@@ -20,7 +20,6 @@ local DefaultDB = {
     ShowItemBorder = false,               --物品直角邊框 #暂停用#
     EnableItemLevel  = true,              --物品等級
       ShowColoredItemLevelString = false, --裝等文字隨物品品質
-      ShowCorruptedMark = false,          --腐蚀装备标记
       ShowItemSlotString = true,          --物品部位文字
         EnableItemLevelBag = true,
         EnableItemLevelBank = true,
@@ -81,7 +80,6 @@ local options = {
     { key = "EnableItemLevel",
       child = {
         { key = "ShowColoredItemLevelString" },
-        { key = "ShowCorruptedMark" },
         { key = "ShowItemSlotString" },
       },
       subtype = {
@@ -356,6 +354,7 @@ LibEvent:attachEvent("VARIABLES_LOADED", function()
             end
         end
     end
+    TinyInspectRemakeDB.ShowCorruptedMark = nil
     InitCheckbox(frame)
 end)
 
