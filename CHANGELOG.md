@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 Older releases are documented in [CHANGELOG-ARCHIVE.md](CHANGELOG-ARCHIVE.md).
 
+## [v1.5.2] 2026-10-14
+- TOC-only update: added support for 12.1.5
+
 ## [v1.5.1] 2026-09-07
 - Fixed inspect frame title characters not displaying correctly on some European clients
 - Fixed socketed gems sometimes appearing as empty in the inspect panel
