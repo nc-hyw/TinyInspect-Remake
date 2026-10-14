@@ -6,7 +6,7 @@
 local MAJOR, MINOR = "LibItemInfo.7000", 8
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 
--- local GetItemInfo = GetItemInfo
+local GetItemInfo = GetItemInfo or C_Item.GetItemInfo
 local GetItemStats = C_Item and C_Item.GetItemStats
 local GetDetailedItemLevelInfoAPI = C_Item and C_Item.GetDetailedItemLevelInfo
 

@@ -5,6 +5,7 @@
 
 local LibEvent = LibStub:GetLibrary("LibEvent.7000")
 local LibSchedule = LibStub:GetLibrary("LibSchedule.7000")
+local GetItemQualityColor = GetItemQualityColor or C_Item.GetItemQualityColor
 
 local function SafeNumber(value, fallback)
     if (type(value) ~= "number") then
