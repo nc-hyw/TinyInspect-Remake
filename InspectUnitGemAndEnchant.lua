@@ -12,6 +12,7 @@ local LibSchedule = LibStub:GetLibrary("LibSchedule.7000")
 local LibItemEnchant = LibStub:GetLibrary("LibItemEnchant.7000")
 
 local GetItemInfo = GetItemInfo or C_Item.GetItemInfo
+local GetItemQualityColor = GetItemQualityColor or C_Item.GetItemQualityColor
 local CItemRequestLoadItemDataByID = C_Item and C_Item.RequestLoadItemDataByID
 
 local DEFAULT_ENCHANT_ICON = 7548963

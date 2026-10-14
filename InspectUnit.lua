@@ -8,6 +8,7 @@ local LibItemInfo = LibStub:GetLibrary("LibItemInfo.7000")
 local GetItemUpgradeInfoAPI = C_Item.GetItemUpgradeInfo
 local GetItemInfoAPI = C_Item.GetItemInfo
 local GetItemSetInfoAPI = C_Item.GetItemSetInfo
+local GetItemQualityColor = GetItemQualityColor or C_Item.GetItemQualityColor
 local GetLootJournalItemSetItemsAPI = C_LootJournal.GetItemSetItems
 
 local DEFAULT_NAME_FONT_FILE, DEFAULT_NAME_FONT_SIZE, DEFAULT_NAME_FONT_FLAGS = GameFontNormalLargeOutline:GetFont()

@@ -5,12 +5,28 @@
 local _, ns = ...
 local L = ns.L
 
--- 兼容性补丁：防止旧版神器圣物函数报错
-if not IsArtifactRelicItem then
-    IsArtifactRelicItem = function(link)
-        if not link then return false end
-        return C_ArtifactUI and C_ArtifactUI.IsArtifactRelicItem and C_ArtifactUI.IsArtifactRelicItem(link)
+-- 兼容性补丁：神器相关全域函式已移除，改用 local 包裝避免 nil 與污染全域
+local function FindAPI(name, ...)
+    if (_G[name]) then return _G[name] end
+    for i = 1, select("#", ...) do
+        local ns = _G[(select(i, ...))]
+        if (ns and ns[name]) then return ns[name] end
     end
+end
+
+local IsArtifactRelicItemAPI = FindAPI("IsArtifactRelicItem", "C_ItemSocketInfo", "C_ArtifactUI", "C_Item")
+local IsArtifactPowerItemAPI = FindAPI("IsArtifactPowerItem", "C_Item", "C_ArtifactUI")
+
+local function IsArtifactRelicItem(item)
+    if (not item or not IsArtifactRelicItemAPI) then return false end
+    local ok, result = pcall(IsArtifactRelicItemAPI, item)
+    return ok and result
+end
+
+local function IsArtifactPowerItem(item)
+    if (not item or not IsArtifactPowerItemAPI) then return false end
+    local ok, result = pcall(IsArtifactPowerItemAPI, item)
+    return ok and result
 end
 
 local LibEvent = LibStub:GetLibrary("LibEvent.7000")
@@ -41,6 +57,9 @@ if (C_Container and C_Container.GetContainerItemInfo) then
 end
 
 local GetItemStats = GetItemStats or C_Item.GetItemStats
+local GetItemInfo = GetItemInfo or C_Item.GetItemInfo
+local GetItemQualityColor = GetItemQualityColor or C_Item.GetItemQualityColor
+local IsEquippableItem = IsEquippableItem or C_Item.IsEquippableItem
 local GetInventoryItemDurability = GetInventoryItemDurability
 
 local function SafeNumber(value, fallback)
