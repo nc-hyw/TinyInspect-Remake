@@ -3,13 +3,13 @@
 -- 物品寶石庫 Author: M
 -------------------------------------
 
-local MAJOR, MINOR = "LibItemGem.7000", 3
+local MAJOR, MINOR = "LibItemGem.7000", 4
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 
-local GetItemGem = (C_Item and C_Item.GetItemGem) or GetItemGem
+local GetItemGem = C_Item.GetItemGem
 local GetItemGemID = C_Item and C_Item.GetItemGemID
-local GetItemInfo = GetItemInfo or C_Item.GetItemInfo
-local GetItemStats = GetItemStats or C_Item.GetItemStats
+local GetItemInfo = C_Item.GetItemInfo
+local GetItemStats = C_Item.GetItemStats
 
 if not lib then return end
 

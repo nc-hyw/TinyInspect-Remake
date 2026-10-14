@@ -40,7 +40,10 @@ if (C_Container and C_Container.GetContainerItemInfo) then
     end
 end
 
-local GetItemStats = GetItemStats or C_Item.GetItemStats
+local GetItemInfo = C_Item.GetItemInfo
+local IsEquippableItem = C_Item.IsEquippableItem
+local IsArtifactPowerItem = C_Item.IsArtifactPowerItem
+local GetItemStats = C_Item.GetItemStats
 local GetInventoryItemDurability = GetInventoryItemDurability
 
 local function SafeNumber(value, fallback)
@@ -125,7 +128,7 @@ end
 --設置裝等文字
 local function SetItemLevelString(self, text, quality, link)
     if (quality and TinyInspectRemakeDB and TinyInspectRemakeDB.ShowColoredItemLevelString) then
-        local r, g, b, hex = GetItemQualityColor(quality)
+        local r, g, b, hex = C_Item.GetItemQualityColor(quality)
         text = format("|c%s%s|r", hex, text)
     end
     self:SetText(text)

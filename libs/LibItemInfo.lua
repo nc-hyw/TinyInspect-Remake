@@ -3,10 +3,10 @@
 -- 物品信息庫 Author: M
 ---------------------------------
 
-local MAJOR, MINOR = "LibItemInfo.7000", 8
+local MAJOR, MINOR = "LibItemInfo.7000", 9
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 
--- local GetItemInfo = GetItemInfo
+local GetItemInfo = C_Item.GetItemInfo
 local GetItemStats = C_Item and C_Item.GetItemStats
 local GetDetailedItemLevelInfoAPI = C_Item and C_Item.GetDetailedItemLevelInfo
 

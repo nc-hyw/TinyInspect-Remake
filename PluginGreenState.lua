@@ -5,8 +5,8 @@
 
 local LibEvent = LibStub:GetLibrary("LibEvent.7000")
 
-local GetItemInfo = GetItemInfo or C_Item.GetItemInfo
-local GetItemStats = GetItemStats or C_Item.GetItemStats
+local GetItemInfo = C_Item.GetItemInfo
+local GetItemStats = C_Item.GetItemStats
 
 local locale = GetLocale():sub(1,2)
 

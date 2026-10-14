@@ -508,7 +508,7 @@ LibEvent:attachTrigger("INSPECT_ITEMFRAME_UPDATED", function(self, itemframe)
     local r, g, b = 0, 0.9, 0.9
     if (TinyInspectRemakeDB and TinyInspectRemakeDB.ShowInspectColoredLabel) then
         if (itemframe.quality and itemframe.quality > 4) then
-            r, g, b = GetItemQualityColor(itemframe.quality)
+            r, g, b = C_Item.GetItemQualityColor(itemframe.quality)
         elseif (itemframe.name and not itemframe.link) then
             r, g, b = 0.9, 0.8, 0.4
         elseif (not itemframe.link) then

@@ -11,7 +11,7 @@ local LibItemGem = LibStub:GetLibrary("LibItemGem.7000")
 local LibSchedule = LibStub:GetLibrary("LibSchedule.7000")
 local LibItemEnchant = LibStub:GetLibrary("LibItemEnchant.7000")
 
-local GetItemInfo = GetItemInfo or C_Item.GetItemInfo
+local GetItemInfo = C_Item.GetItemInfo
 local CItemRequestLoadItemDataByID = C_Item and C_Item.RequestLoadItemDataByID
 
 local DEFAULT_ENCHANT_ICON = 7548963
@@ -140,7 +140,7 @@ end
 local function onExecute(self)
     local _, itemLink, quality, _, _, _, _, _, _, texture = GetItemInfo(self.data)
     if (texture) then
-        local r, g, b = GetItemQualityColor(quality or 0)
+        local r, g, b = C_Item.GetItemQualityColor(quality or 0)
         self.icon.bg:SetVertexColor(r, g, b)
         self.icon.texture:SetTexture(texture)
         if (not self.icon.itemLink) then
@@ -180,7 +180,7 @@ local function ShowGemAndEnchant(frame, ItemLink, anchorFrame, itemframe, isDeat
         icon = GetIconFrame(frame)
         if (v.link) then
             _, _, quality, _, _, _, _, _, _, texture = GetItemInfo(v.link)
-            r, g, b = GetItemQualityColor(quality or 0)
+            r, g, b = C_Item.GetItemQualityColor(quality or 0)
             icon.bg:SetVertexColor(r, g, b)
             icon.texture:SetTexture(texture or "Interface\\Cursor\\Quest")
             UpdateIconTexture(icon, texture, v.link)
