@@ -67,14 +67,15 @@ LibEvent:attachTrigger("INSPECT_FRAME_CREATED", function(this, frame, parent)
     }
     while(frame["item"..i]) do
         itemframe = frame["item"..i]
-        itemframe.label:SetBackdrop({})
-        itemframe.label.text:SetText("")
-        itemframe.label:SetWidth(68)
+        -- Keep the slot label and reserve a separate column for stat prefixes.
+        itemframe.statPrefixWidth = 68
+        itemframe.label:ClearAllPoints()
+        itemframe.label:SetPoint("LEFT", itemframe, "LEFT", itemframe.statPrefixWidth + 4, 0)
         local j = 1
         for k, v in pairs(shown) do
             itemframe[k] = CreateFrame("Frame", nil, itemframe, BackdropTemplateMixin and "BackdropTemplate" or nil)
             itemframe[k]:SetSize(16, 14)
-            itemframe[k]:SetPoint("LEFT", (j-1)*17, 0)
+            itemframe[k]:SetPoint("LEFT", itemframe, "LEFT", (j-1)*17, 0)
             itemframe[k]:SetBackdrop(backdrop)
             itemframe[k]:SetBackdropBorderColor(v.r, v.g, v.b, 0.25)
             itemframe[k]:SetBackdropColor(0, 0, 0, 0.5)
