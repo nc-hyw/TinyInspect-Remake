@@ -30,6 +30,7 @@ local DefaultDB = {
         EnableItemLevelLoot = true,
         EnableItemLevelOther = true,
     ShowInspectAngularBorder = false,     --觀察面板直角邊框
+    ShowInspectClassBorder = true,        --装备列表职业边框染色
     ShowInspectColoredLabel = true,       --觀察面板高亮橙裝武器標簽
     ShowCharacterItemSheet = true,        --顯示玩家自己裝備列表
     ShowInspectItemSheet = true,          --顯示观察对象装备列表 --20190318Added
@@ -95,6 +96,7 @@ local InspectEquipmentOptions = {
 
 local InspectAppearanceOptions = {
     { key = "ShowInspectAngularBorder" },
+    { key = "ShowInspectClassBorder" },
     { key = "ShowInspectColoredLabel" },
 }
 

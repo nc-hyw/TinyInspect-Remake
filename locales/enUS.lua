@@ -12,6 +12,7 @@ local T = {
     ShowColoredItemLevelString  = "Color item-level text by item quality",
     ShowItemSlotString          = "Show item-slot text",
     ShowInspectAngularBorder    = "Use angular borders in the inspect panel",
+    ShowInspectClassBorder      = "Class-colored borders",
     ShowInspectColoredLabel     = "Highlight legendary weapon labels in the inspect panel",
     ShowCharacterItemSheet      = "Show your equipment list",
     ShowInspectItemSheet        = "Show the inspected player's equipment list",

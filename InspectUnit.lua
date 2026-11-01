@@ -407,6 +407,9 @@ function ShowInspectItemListFrame(unit, parent, ilevel, maxLevel)
             itemframe.itemString:SetWidth(itemwidth)
         end
         itemframe.width = itemwidth + max(64, floor(itemframe.label:GetWidth() + itemframe.levelString:GetWidth()) + 4)
+        if (itemframe.statPrefixWidth) then
+            itemframe.width = itemframe.width + itemframe.statPrefixWidth + 4
+        end
         itemframe:SetWidth(itemframe.width)
         if (width < itemframe.width) then
             width = itemframe.width
@@ -450,7 +453,11 @@ function ShowInspectItemListFrame(unit, parent, ilevel, maxLevel)
     LibEvent:trigger("INSPECT_FRAME_SHOWN", frame, parent, ilevel)
     frame:SetBackdrop(frame.backdrop)
     frame:SetBackdropColor(0, 0, 0, 0.9)
-    frame:SetBackdropBorderColor(color.r, color.g, color.b)
+    if (TinyInspectRemakeDB and TinyInspectRemakeDB.ShowInspectClassBorder) then
+        frame:SetBackdropBorderColor(color.r, color.g, color.b)
+    else
+        frame:SetBackdropBorderColor(1, 1, 1)
+    end
 
     return frame
 end

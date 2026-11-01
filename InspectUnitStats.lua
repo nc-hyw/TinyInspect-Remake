@@ -11,6 +11,7 @@ if (locale == "koKR" or locale == "enUS" or locale == "zhCN" or locale == "zhTW"
 else return end
 
 local LibItemInfo = LibStub:GetLibrary("LibItemInfo.7000")
+local InspectFrames = setmetatable({}, { __mode = "k" })
 
 local function GetStateValue(unit, state, value, default)
     return value or default
@@ -54,9 +55,14 @@ function ShowInspectItemStatsFrame(frame, unit)
         mask:SetBlendMode("ADD")
         --mask:SetGradientAlpha("VERTICAL", 0.1, 0.4, 0.4, 0.8, 0.1, 0.2, 0.2, 0.8)
         mask:SetAlpha(0.2)
+        statsFrame.comparisonMask = mask
         frame.statsFrame = statsFrame
     end
     if (not frame.statsFrame:IsShown()) then return end
+    local showComparison = not UnitIsUnit(unit, "player")
+    local panelWidth = showComparison and 197 or 143
+    frame.statsFrame:SetWidth(panelWidth)
+    frame.statsFrame.comparisonMask:SetShown(showComparison)
     local allowedStats = {
         [ITEM_MOD_INTELLECT_SHORT] = true,
         [ITEM_MOD_STRENGTH_SHORT] = true,
@@ -214,6 +220,13 @@ function ShowInspectItemStatsFrame(frame, unit)
             end
         end
     end
+    for i = 1, index - 1 do
+        local row = frame.statsFrame["stat"..i]
+        row:SetWidth(panelWidth)
+        row.Value:ClearAllPoints()
+        row.Value:SetPoint("RIGHT", showComparison and -64 or -10, 0)
+        row.PlayerValue:SetShown(showComparison)
+    end
     frame.statsFrame:SetHeight(index*17-10)
     while (frame.statsFrame["stat"..index]) do
         frame.statsFrame["stat"..index]:Hide()
@@ -221,13 +234,27 @@ function ShowInspectItemStatsFrame(frame, unit)
     end
 end
 
+local function UpdateInspectItemStats(frame, unit)
+    -- The extra player equipment list shares the inspected unit's comparison panel.
+    local parent = frame:GetParent()
+    local isComparisonList = unit == "player" and parent and InspectFrames[parent]
+    if (isComparisonList or (TinyInspectRemakeDB and not TinyInspectRemakeDB.ShowItemStats)) then
+        if (frame.statsFrame) then frame.statsFrame:Hide() end
+        if (frame.expandButton) then frame.expandButton:Hide() end
+        frame.statsDisabled = true
+        return
+    end
+    if (frame.statsDisabled and frame.statsFrame) then
+        frame.statsFrame:Show()
+    end
+    frame.statsDisabled = nil
+    if (frame.expandButton) then frame.expandButton:Show() end
+    ShowInspectItemStatsFrame(frame, unit)
+end
+
 hooksecurefunc("ShowInspectItemListFrame", function(unit, parent, itemLevel, maxLevel)
     local frame = parent.inspectFrame
     if (not frame) then return end
-    if (unit == "player") then return end
-    if (TinyInspectRemakeDB and not TinyInspectRemakeDB.ShowItemStats) then
-        if (frame.statsFrame) then frame.statsFrame:Hide() end
-        return
-    end
-    ShowInspectItemStatsFrame(frame, unit)
+    InspectFrames[frame] = true
+    UpdateInspectItemStats(frame, unit)
 end)

@@ -13,6 +13,7 @@ local T = {
     ShowColoredItemLevelString  = "装等文字随物品品质",
     ShowItemSlotString          = "显示物品部位文字",
     ShowInspectAngularBorder    = "观察面板直角边框",
+    ShowInspectClassBorder      = "职业边框染色",
     ShowInspectColoredLabel     = "观察面板高亮橙装武器标签",
     ShowCharacterItemSheet      = "显示玩家自己装备列表",
     ShowInspectItemSheet        = "显示观察对象装备列表",
